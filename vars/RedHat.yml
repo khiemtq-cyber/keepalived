@@ -1,0 +1,4 @@
+keepalived_package_name: keepalived
+keepalived_path_config: /etc/keepalived/keepalived.conf
+node_ips_self_exclude: "{{ groups['all'] | map('extract', hostvars, ['ip']) | reject('equalto', hostvars[inventory_hostname].ip) | join('\n') }}"
+priority_start: 0

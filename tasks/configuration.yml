@@ -1,0 +1,39 @@
+# - name: Add Sripts to destination SRV for notify.
+#   template:
+#     src: trigger-notify.sh
+#     dest: /opt/trigger-notify.sh
+#     force: true
+#     owner: root
+#     group: root
+#     mode: 0644
+
+- name: Grant permission for assign VIP to interface
+  sysctl: 
+    name: "{{ item }}"
+    value: "1"
+    state: present 
+    reload: yes
+  with_items:
+    - net.ipv4.ip_nonlocal_bind
+    - net.ipv4.ip_forward
+
+- name: Add managed keepalived config files.
+  template:
+    src: "{{keepalived_template}}"
+    dest: "{{ keepalived_path_config }}"
+    force: true
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - Restart_keepalived
+  when: keepalived_template is defined
+
+- name: Remove self IP from Unicast peer
+  lineinfile:
+    path: "{{ keepalived_path_config }}"
+    regexp: ^\s*{{ ip }}
+    state: absent
+  notify:
+    - Restart_keepalived
+  when: "keepalived_template =='keepalived.conf.j2'"

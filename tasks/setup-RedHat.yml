@@ -1,0 +1,19 @@
+- name: debug
+  ansible.builtin.debug:
+    msg:
+      - "SHOW DEBUG: {{ node_ips_self_exclude }}"
+      - "SHOW DEBUG: {{ group_names }}"
+      - "SHOW DEBUG: {{proxy_env}}"
+
+- name: Ensure Keepalived is installed.
+  yum:
+    name: "{{ keepalived_package_name }}"
+    state: present
+  environment: "{{ proxy_env }}"
+
+- name: Enable service keepalived and ensure it is not masked
+  systemd:
+    name: "{{ keepalived_package_name }}"
+    enabled: yes
+    masked: no
+

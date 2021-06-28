@@ -1,0 +1,28 @@
+#jinja2: trim_blocks:False
+vrrp_instance {{ instance_name }}
+{
+    state {{ state }}
+    interface {{ iface }}
+    priority {{ vrrp_priority }}
+    {% if nopreempt %}
+    nopreempt
+    {% endif%}
+    virtual_router_id {{ router_id }}
+    advert_int 1
+    unicast_src_ip {{ source_ip }}
+    authentication 
+    {
+      auth_type PASS
+      auth_pass {{ vrrp_auth_pass }}
+    }
+    unicast_peer 
+    {
+      {% for host in groups[ lookup('vars', 'unicast_peer_group') ] %}
+      {{ hostvars[host]['ip'] }}
+      {% endfor %}
+    }
+    virtual_ipaddress 
+    {
+        {{ vrrp_ip }} brd {{ vrrp_subnet }} dev {{ iface }} label {{ iface }}:0
+    }
+}

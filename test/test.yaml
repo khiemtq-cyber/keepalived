@@ -1,0 +1,47 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  gather_facts: true
+  roles:
+    - {role: 'keepalived',tags: 'keepalived'}
+  vars:
+  #-------Keepalived--------#
+    # global_defs:
+    #     notification_email:
+    #     notification_email_from:
+    #     smtp_server:
+    #     smtp_connect_timeout:
+    # vrrp_sync_group:
+    #   - name:
+    #     group:
+    #     notify_master:
+    #     notify_backup:
+    #     notify_fault:
+    keepalived_template: keepalived-custom.conf.j2
+    vrrp_script:
+      - name: check_haproxy
+        script: "/usr/bin/killall -0 haproxy"
+        interval: 2
+        weight: 2
+    vrrp_instance:
+      - name: api-k8s-vip
+        # interface: bond0
+        advert_int: 1
+        authentication:
+          auth_type: PASS
+          auth_pass: 1nc0rrect
+        virtual_ipaddress: 172.24.181.4
+        track_script: check_haproxy
+      - name: app-k8s-vip
+        # interface: eth0
+        advert_int: 1
+        authentication:
+          auth_type: PASS
+          auth_pass: 1nc0rrect
+        virtual_ipaddress: 172.24.181.5
+        track_script: check_haproxy
+        # notify_master: "/opt/trigger-notify.sh Keepalived Failed"
+        # notify_backup: "/opt/trigger-notify.sh Keepalived Failed"
+        # notify_fault: "/opt/trigger-notify.sh Keepalived Failed"
+  #-------End Keepalived--------#

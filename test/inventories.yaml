@@ -1,0 +1,35 @@
+all:
+  hosts:
+    node1:
+      ansible_ssh_host: 172.24.176.17
+      ip: 172.24.181.6
+      ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o ProxyCommand="ssh -W %h:%p -q hieunlp@172.24.176.200"
+    node2:
+      ansible_ssh_host: 172.24.176.18
+      ip: 172.24.181.7
+      ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o ProxyCommand="ssh -W %h:%p -q hieunlp@172.24.176.200"
+    node3:
+      ansible_ssh_host: 172.24.176.19
+      ip: 172.24.181.8
+      ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o ProxyCommand="ssh -W %h:%p -q hieunlp@172.24.176.200"
+    # node4:
+    #   ansible_ssh_host: 172.24.176.20
+    #   ip: 172.24.181.9
+    #   ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o ProxyCommand="ssh -W %h:%p -q hieunlp@172.24.176.200"
+    # node5:
+    #   ansible_ssh_host: 172.24.176.21
+    #   ip: 172.24.181.10
+    #   ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o ProxyCommand="ssh -W %h:%p -q hieunlp@172.24.176.200"
+    # node6:
+    #   ansible_ssh_host: 172.24.176.22
+    #   ip: 172.24.181.11
+    #   ansible_ssh_common_args: -o "StrictHostKeyChecking no" -o ProxyCommand="ssh -W %h:%p -q hieunlp@172.24.176.200"
+  children:
+    master:
+      hosts:
+        node1:
+    backup:
+      hosts:
+        node2:
+        node3:
+

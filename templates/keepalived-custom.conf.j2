@@ -1,0 +1,76 @@
+#jinja2: trim_blocks:False
+
+{# 
+{% if global_defs is defined %}
+global_defs 
+{
+  {% if global_defs.notification_email is defined %}
+    {{ global_defs.notification_email }}
+  {% endif %}
+}
+{% endif%}
+
+{% if vrrp_sync_group.name is defined %}
+{% for e in vrrp_script %}
+vrrp_script {{e.name}} {
+  script {{e.script}}
+  interval {{e.interval}}
+  weight {{e.weight}}
+}
+{% endfor %}
+{% endif%} #}
+
+{% if vrrp_script[0] is defined %}
+{% for e in vrrp_script %}
+vrrp_script {{e.name}} {
+  script "{{e.script}}"
+  interval {{e.interval}}
+  weight {{e.weight}}
+}
+{% endfor %}
+{% endif%}
+
+{% if vrrp_instance[0] is defined %}
+{% for e in vrrp_instance %}
+vrrp_instance {{ e.name }} {
+    state {{ group_names | join('') | upper}}
+    {% if 'master' == group_names | join('') %}
+    priority {{ inventory_hostname | regex_search("(\d{1})$", multiline=False, ignorecase=True) | int + 200 }}
+    {% elif 'backup' == group_names | join('') %}
+    priority {{ inventory_hostname | regex_search("(\d{1})$", multiline=False, ignorecase=True) | int + 100 }}
+    {% endif %}
+    interface {{ ansible_default_ipv4.alias }}
+    {% if e.virtual_ipaddress is defined %}
+    virtual_router_id {{ e.virtual_ipaddress | regex_search("(\d{1,3})$", multiline=False, ignorecase=True) }}
+    {% endif %}
+    {% if e.advert_int is defined %}
+    advert_int {{ e.advert_int }} 
+    {% endif %}
+{% if hostvars[inventory_hostname].ip is defined %}
+    unicast_src_ip {{hostvars[inventory_hostname].ip}}
+{% endif %}
+{% if node_ips_self_exclude is defined %}
+    unicast_peer {
+    {{ node_ips_self_exclude | indent(width=4, indentfirst=False)}}
+    }
+{% endif %}
+{% if e.authentication is defined %}
+    authentication {
+      auth_type {{ e.authentication.auth_type }}
+      auth_pass {{ e.authentication.auth_pass }}
+    }
+{% endif %}
+{% if e.virtual_ipaddress is defined %}
+    virtual_ipaddress {
+      {{ e.virtual_ipaddress }}
+    }
+{% endif %}
+{% if e.track_script is defined %}
+    track_script {
+      {{ e.track_script}}
+    }
+{% endif %}
+}
+{% endfor %}
+{% endif%}
+
